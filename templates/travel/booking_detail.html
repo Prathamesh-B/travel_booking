@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Details - {{ booking.booking_id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Booking Details</h4>
+                    <span class="badge bg-{% if booking.status == 'confirmed' %}success{% else %}danger{% endif %} fs-6">
+                        {{ booking.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Booking Information</h6>
+                            <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+                            <p><strong>Booking Date:</strong> {{ booking.booking_date|date:"F d, Y g:i A" }}</p>
+                            <p><strong>Number of Seats:</strong> {{ booking.number_of_seats }}</p>
+                            <p><strong>Total Amount:</strong> <span class="text-primary h5">${{ booking.total_price }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Travel Details</h6>
+                            <p><strong>{{ booking.travel_option.get_type_display }}:</strong> {{ booking.travel_option.travel_id }}</p>
+                            <p><strong>Route:</strong> {{ booking.travel_option.source }} → {{ booking.travel_option.destination }}</p>
+                            <p><strong>Departure:</strong> {{ booking.travel_option.departure_date|date:"F d, Y" }} at {{ booking.travel_option.departure_time|time:"g:i A" }}</p>
+                            <p><strong>Arrival:</strong> {{ booking.travel_option.arrival_date|date:"F d, Y" }} at {{ booking.travel_option.arrival_time|time:"g:i A" }}</p>
+                        </div>
+                    </div>
+
+                    {% if booking.passenger_details.names %}
+                        <div class="mb-3">
+                            <h6>Passenger Details</h6>
+                            <ul class="list-unstyled">
+                                {% for name in booking.passenger_details.names %}
+                                    <li>{{ forloop.counter }}. {{ name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    {% if booking.passenger_details.contact_phone %}
+                        <div class="mb-3">
+                            <h6>Contact Information</h6>
+                            <p><strong>Phone:</strong> {{ booking.passenger_details.contact_phone }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            {% if booking.can_be_cancelled %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid">
+                            <a href="{% url 'travel:cancel_booking' booking.pk %}" 
+                               class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Cancel Booking
+                            </a>
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            Free cancellation until departure
+                        </small>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Important Information</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0 small">
+                        <li class="mb-2">
+                            <i class="bi bi-info-circle text-info"></i>
+                            Please arrive 30 minutes before departure
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-person-badge text-info"></i>
+                            Valid ID required for travel
+                        </li>
+                        <li>
+                            <i class="bi bi-printer text-info"></i>
+                            Print this confirmation or show on mobile
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'travel:booking_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Back to My Bookings
+        </a>
+    </div>
+</div>
+{% endblock %}

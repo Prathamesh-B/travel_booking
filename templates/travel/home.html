@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Home - Travel Booking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="jumbotron bg-primary text-white rounded p-5 mb-4">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Find Your Perfect Journey</h1>
+            <p class="col-md-8 fs-4">Book flights, trains, and buses with ease. Compare prices and find the best travel options for your next adventure.</p>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-search"></i> Search Travel Options</h5>
+        </div>
+        <div class="card-body">
+            {% crispy form %}
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if page_obj %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Available Options</h4>
+            <small class="text-muted">{{ total_results }} result{{ total_results|pluralize }} found</small>
+        </div>
+
+        <div class="row">
+            {% for travel in page_obj %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card card-travel h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{{ travel.type|default:'secondary' }} rounded-pill">
+                                {% if travel.type == 'flight' %}
+                                    <i class="bi bi-airplane"></i> Flight
+                                {% elif travel.type == 'train' %}
+                                    <i class="bi bi-train-lightrail"></i> Train
+                                {% elif travel.type == 'bus' %}
+                                    <i class="bi bi-bus-front"></i> Bus
+                                {% endif %}
+                            </span>
+                            <small class="text-muted">{{ travel.travel_id }}</small>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                {{ travel.source }} <i class="bi bi-arrow-right"></i> {{ travel.destination }}
+                            </h6>
+                            
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <small class="text-muted">Departure</small>
+                                    <div>{{ travel.departure_date|date:"M d, Y" }}</div>
+                                    <div>{{ travel.departure_time|time:"H:i" }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Arrival</small>
+                                    <div>{{ travel.arrival_date|date:"M d, Y" }}</div>
+                                    <div>{{ travel.arrival_time|time:"H:i" }}</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="h5 mb-0 text-primary">${{ travel.price }}</span>
+                                <small class="text-muted">
+                                    {{ travel.available_seats }} seat{{ travel.available_seats|pluralize }} left
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'travel:travel_detail' travel.pk %}" class="btn btn-outline-primary btn-sm">
+                                    View Details
+                                </a>
+                                {% if travel.available_seats > 0 %}
+                                    <a href="{% url 'travel:book_travel' travel.pk %}" class="btn btn-primary btn-sm">
+                                        Book Now
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-secondary btn-sm" disabled>Fully Booked</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Search results pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search display-1 text-muted"></i>
+            <h4 class="mt-3">No travel options found</h4>
+            <p class="text-muted">Try adjusting your search criteria</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

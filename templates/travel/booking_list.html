@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookings - Travel Booking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Bookings</h2>
+        <div class="btn-group" role="group">
+            <a href="{% url 'travel:booking_list' %}" 
+               class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">
+                All Bookings
+            </a>
+            <a href="{% url 'travel:booking_list' %}?status=confirmed" 
+               class="btn btn-outline-success {% if status_filter == 'confirmed' %}active{% endif %}">
+                Confirmed
+            </a>
+            <a href="{% url 'travel:booking_list' %}?status=cancelled" 
+               class="btn btn-outline-danger {% if status_filter == 'cancelled' %}active{% endif %}">
+                Cancelled
+            </a>
+        </div>
+    </div>
+
+    {% if page_obj %}
+        {% for booking in page_obj %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="mb-0">
+                                    {{ booking.travel_option.source }} → {{ booking.travel_option.destination }}
+                                </h5>
+                                <span class="badge bg-{% if booking.status == 'confirmed' %}success{% else %}danger{% endif %} fs-6">
+                                    {{ booking.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-ticket"></i> {{ booking.booking_id }} | 
+                                {{ booking.travel_option.get_type_display }} {{ booking.travel_option.travel_id }}
+                            </p>
+                            
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <small class="text-muted">Departure</small>
+                                    <div>{{ booking.travel_option.departure_date|date:"l, M d, Y" }}</div>
+                                    <div>{{ booking.travel_option.departure_time|time:"g:i A" }}</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted">Booking Details</small>
+                                    <div>{{ booking.number_of_seats }} seat{{ booking.number_of_seats|pluralize }}</div>
+                                    <div class="fw-bold text-primary">${{ booking.total_price }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-md-end">
+                            <small class="text-muted d-block mb-2">
+                                Booked on {{ booking.booking_date|date:"M d, Y" }}
+                            </small>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'travel:booking_detail' booking.pk %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    View Details
+                                </a>
+                                {% if booking.can_be_cancelled %}
+                                    <a href="{% url 'travel:cancel_booking' booking.pk %}" 
+                                       class="btn btn-outline-danger btn-sm">
+                                        Cancel Booking
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Bookings pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-ticket display-1 text-muted"></i>
+            <h4 class="mt-3">No bookings found</h4>
+            <p class="text-muted">You haven't made any bookings yet.</p>
+            <a href="{% url 'travel:home' %}" class="btn btn-primary">
+                <i class="bi bi-search"></i> Find Travel Options
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

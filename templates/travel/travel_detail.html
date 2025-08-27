@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ travel_option.source }} to {{ travel_option.destination }} - Travel Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Travel Details</h4>
+                        <span class="badge bg-{{ travel_option.type }} fs-6">
+                            {% if travel_option.type == 'flight' %}
+                                <i class="bi bi-airplane"></i> Flight
+                            {% elif travel_option.type == 'train' %}
+                                <i class="bi bi-train-lightrail"></i> Train
+                            {% elif travel_option.type == 'bus' %}
+                                <i class="bi bi-bus-front"></i> Bus
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>{{ travel_option.source }}</h5>
+                            <p class="text-muted mb-1">Departure</p>
+                            <p class="fw-bold">{{ travel_option.departure_date|date:"l, F d, Y" }}</p>
+                            <p class="fw-bold">{{ travel_option.departure_time|time:"g:i A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>{{ travel_option.destination }}</h5>
+                            <p class="text-muted mb-1">Arrival</p>
+                            <p class="fw-bold">{{ travel_option.arrival_date|date:"l, F d, Y" }}</p>
+                            <p class="fw-bold">{{ travel_option.arrival_time|time:"g:i A" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Travel ID</h6>
+                            <p>{{ travel_option.travel_id }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Price per Seat</h6>
+                            <p class="h4 text-primary">${{ travel_option.price }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Available Seats</h6>
+                            <p class="{% if travel_option.available_seats < 5 %}text-warning{% else %}text-success{% endif %}">
+                                {{ travel_option.available_seats }} of {{ travel_option.total_seats }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Book This Journey</h5>
+                </div>
+                <div class="card-body">
+                    {% if travel_option.available_seats > 0 %}
+                        {% if user.is_authenticated %}
+                            <div class="d-grid">
+                                <a href="{% url 'travel:book_travel' travel_option.pk %}" 
+                                   class="btn btn-primary btn-lg">
+                                    <i class="bi bi-ticket"></i> Book Now
+                                </a>
+                            </div>
+                            <small class="text-muted d-block mt-2 text-center">
+                                Secure booking with instant confirmation
+                            </small>
+                        {% else %}
+                            <div class="text-center">
+                                <p class="mb-3">Please log in to book this travel option</p>
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'login' %}?next={% url 'travel:book_travel' travel_option.pk %}" 
+                                       class="btn btn-primary">
+                                        Login to Book
+                                    </a>
+                                    <a href="{% url 'accounts:signup' %}" class="btn btn-outline-primary">
+                                        Create Account
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center">
+                            <i class="bi bi-x-circle display-4 text-danger"></i>
+                            <h6 class="mt-2">Fully Booked</h6>
+                            <p class="text-muted">This travel option is no longer available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Additional Info Card -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Booking Information</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Instant confirmation
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-shield-check text-success"></i>
+                            Secure payment
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-arrow-clockwise text-success"></i>
+                            Free cancellation until departure
+                        </li>
+                        <li>
+                            <i class="bi bi-headset text-success"></i>
+                            24/7 customer support
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
