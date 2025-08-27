@@ -14,10 +14,16 @@
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
-                        {% crispy form %}
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Error:</strong> Please check your username and password.
+                            </div>
+                        {% endif %}
+                        {{ form|crispy }}
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Login</button>
                         </div>
+                        <input type="hidden" name="next" value="{{ next }}">
                     </form>
                     
                     <div class="text-center mt-3">
